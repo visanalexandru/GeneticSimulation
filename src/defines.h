@@ -6,6 +6,7 @@
 #define GENETICSIMULATION_INCLUDES_H
 
 #include<cstdint>
+#include<random>
 
 namespace GeneticSimulation {
     // A vector of 64 bits.
@@ -24,6 +25,12 @@ namespace GeneticSimulation {
      * elements.
      */
     unsigned int ceil_log(unsigned int x);
+
+    // The random number generator;
+    extern std::mt19937 rng;
+
+    // Generates a random array of bits of the given size.
+    unsigned int random_bitvector(unsigned int num_bits);
 }
 
 #endif //GENETICSIMULATION_INCLUDES_H
