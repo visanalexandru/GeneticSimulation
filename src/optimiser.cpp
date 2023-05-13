@@ -70,14 +70,14 @@ namespace GeneticSimulation {
             std::cout << std::endl;
         }
 
-        /* Then generate organism.size() numbers in [0,1).
+        /* Then generate organism.size()-1 numbers in [0,1).
          * For each generated number, we need to find out which interval
          * it resides in. So for a number x, we need to find the smallest y such that
          * y>x.
          */
 
         std::vector<Organism> selected;
-        for (size_t i = 0; i < organisms.size(); i++) {
+        for (size_t i = 0; i < organisms.size() - 1; i++) {
             // Random uniform number int [0 , 1).
             std::uniform_real_distribution<> dist(0, 1);
             double uniform = dist(rng);
@@ -108,16 +108,41 @@ namespace GeneticSimulation {
         std::cout << std::endl;
     }
 
+    Organism Optimiser::fittest(const std::vector<Organism> &organisms) const {
+        double best = 0;
+        Organism to_return = organisms[0];
+        for (const Organism &o: organisms) {
+            double ft = fitness(o);
+            if (ft > best) {
+                to_return = o;
+                best = ft;
+            }
+        }
+        return to_return;
+    }
+
 
     std::vector<Organism> Optimiser::next_generation(const std::vector<Organism> &organisms, bool verbose) const {
+        if (organisms.empty()) {
+            return organisms;
+        }
         if (verbose) {
             show_population(organisms);
         }
-
+        // Find the fittest organism, so that it is passed in the next generation.
+        Organism best = fittest(organisms);
         std::vector<Organism> selected = selection(organisms, verbose);
 
-        std::cout << "After selection: " << std::endl;
-        show_population(selected);
+        if (verbose) {
+            std::cout << "Fittest: " << fitness(best) << std::endl;
+        }
+
+        if (verbose) {
+            std::cout << "After selection: " << std::endl;
+            show_population(selected);
+        }
+
+
         return selected;
     }
 

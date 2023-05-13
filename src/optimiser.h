@@ -76,7 +76,7 @@ namespace GeneticSimulation {
 
         /*
          * This method takes as a parameter a vector of organisms of size n and
-         * returns n organisms based on each organism's probability of being selected.
+         * returns n-1 organisms based on each organism's probability of being selected.
          * The selection is implemented this way: we associate to each organism
          * a probability of being selected based on its fitness value. The more fit
          * it is, the higher the probability of being selected.
@@ -88,6 +88,13 @@ namespace GeneticSimulation {
          * It applies the three transformations: selection, cross-over and mutation.
          */
         std::vector<Organism> next_generation(const std::vector<Organism> &organisms, bool verbose = false) const;
+
+
+        /*
+         * This method returns the fittest organism in the given vector. If the vector is empty
+         * the behaviour is undefined.
+         */
+        Organism fittest(const std::vector<Organism> &organisms) const;
 
     public:
         Optimiser(std::function<double(double)> _function,
