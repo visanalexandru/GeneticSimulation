@@ -40,15 +40,91 @@ namespace GeneticSimulation {
         return result;
     }
 
+    std::vector<Organism> Optimiser::selection(const std::vector<Organism> &organisms, bool verbose) const {
+        std::vector<double> fitness_score(organisms.size());
+        double total = 0, last = 0;
+
+        // Precompute fitness scores and the total sum.
+        for (size_t i = 0; i < organisms.size(); i++) {
+            fitness_score[i] = fitness(organisms[i]);
+            total += fitness_score[i];
+        }
+
+        // Generate the intervals.
+        std::vector<double> intervals;
+        for (size_t i = 0; i < organisms.size(); i++) {
+            double probability = fitness_score[i] / total;
+            intervals.push_back(last + probability);
+            last += probability;
+            if (verbose) {
+                std::cout << "Organism " << i + 1 << " has a probability of " << fitness_score[i] / total << std::endl;
+            }
+        }
+
+        if (verbose) {
+            std::cout << std::endl;
+            std::cout << "Probability intervals: " << std::endl;
+            for (double x: intervals) {
+                std::cout << x << " ";
+            }
+            std::cout << std::endl;
+        }
+
+        /* Then generate organism.size() numbers in [0,1).
+         * For each generated number, we need to find out which interval
+         * it resides in. So for a number x, we need to find the smallest y such that
+         * y>x.
+         */
+
+        std::vector<Organism> selected;
+        for (size_t i = 0; i < organisms.size(); i++) {
+            // Random uniform number int [0 , 1).
+            std::uniform_real_distribution<> dist(0, 1);
+            double uniform = dist(rng);
+
+            size_t index = std::upper_bound(intervals.begin(), intervals.end(), uniform) - intervals.begin();
+
+            selected.push_back(organisms[index]);
+            if (verbose) {
+                std::cout << "u = " << uniform << " we choose the organism " << index + 1 << std::endl;
+            }
+        }
+
+        if (verbose) {
+            std::cout << std::endl;
+        }
+
+        return selected;
+    }
+
+    void Optimiser::show_population(const std::vector<Organism> &population) const {
+        size_t index = 1;
+        for (const Organism &organism: population) {
+            std::cout << index << ": " << bitvector_to_string(organism.get_chromosome(), bits_per_chromosome) << " ";
+            std::cout << "x = " << to_domain(organism) << " ";
+            std::cout << "f = " << fitness(organism) << std::endl;
+            index++;
+        }
+        std::cout << std::endl;
+    }
+
+
+    std::vector<Organism> Optimiser::next_generation(const std::vector<Organism> &organisms, bool verbose) const {
+        if (verbose) {
+            show_population(organisms);
+        }
+
+        std::vector<Organism> selected = selection(organisms, verbose);
+
+        std::cout << "After selection: " << std::endl;
+        show_population(selected);
+        return selected;
+    }
 
     double Optimiser::optimise() {
         std::vector<Organism> population = initial_population();
         std::cout << "Initial population: " << std::endl;
-        for (const Organism &organism: population) {
-            std::cout << bitvector_to_string(organism.get_chromosome(), bits_per_chromosome) << " ";
-            std::cout << "x = " << organism.get_chromosome() * step_size + domain.left << " ";
-            std::cout << "f = " << fitness(organism) << std::endl;
-        }
+        next_generation(population, true);
         return 0;
     }
 
