@@ -62,6 +62,11 @@ namespace GeneticSimulation {
          * Mutates the chromosome by flipping the ith bit.
          */
         void mutate(unsigned int i);
+
+        /*
+         * This static function generates a random organism with the given chromosome size.
+         */
+        static Organism random_organism(unsigned int chromosome_size);
     };
 
 }

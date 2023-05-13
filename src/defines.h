@@ -7,6 +7,7 @@
 
 #include<cstdint>
 #include<random>
+#include<string>
 
 namespace GeneticSimulation {
     // A vector of 64 bits.
@@ -31,6 +32,9 @@ namespace GeneticSimulation {
 
     // Generates a random array of bits of the given size.
     unsigned int random_bitvector(unsigned int num_bits);
+
+    // Converts the given bitvector to a string of ones and zeroes.
+    std::string bitvector_to_string(bitvector vector, unsigned int num_bits);
 }
 
 #endif //GENETICSIMULATION_INCLUDES_H

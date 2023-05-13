@@ -55,5 +55,9 @@ namespace GeneticSimulation {
         bitvector bit = 1ll << i;
         chromosome ^= bit;
     }
+
+    Organism Organism::random_organism(unsigned int chromosome_size) {
+        return Organism(random_bitvector(chromosome_size), chromosome_size);
+    }
 }
 

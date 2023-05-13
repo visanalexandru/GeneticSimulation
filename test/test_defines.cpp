@@ -25,3 +25,13 @@ TEST_CASE("Test ceil log", "[util]") {
     REQUIRE(GeneticSimulation::ceil_log(1073741824) == 30);
     REQUIRE(GeneticSimulation::ceil_log(8172464) == 23);
 }
+
+
+TEST_CASE("Test bitvector to string") {
+    GeneticSimulation::bitvector a = 0b001010111011;
+    GeneticSimulation::bitvector b = 0b1;
+    GeneticSimulation::bitvector c = 0b0010111101010010101;
+    REQUIRE(GeneticSimulation::bitvector_to_string(a, 12) == "001010111011");
+    REQUIRE(GeneticSimulation::bitvector_to_string(b, 1) == "1");
+    REQUIRE(GeneticSimulation::bitvector_to_string(c, 19) == "0010111101010010101");
+}

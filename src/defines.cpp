@@ -30,4 +30,16 @@ namespace GeneticSimulation {
         std::uniform_int_distribution<std::mt19937::result_type> distribution(0, maximum);
         return distribution(rng);
     }
+
+    std::string bitvector_to_string(bitvector vector, unsigned int num_bits) {
+        std::string result;
+        for (long long x = num_bits - 1; x >= 0; x--) {
+            if ((vector & (1 << x)) != 0) {
+                result.push_back('1');
+            } else {
+                result.push_back('0');
+            }
+        }
+        return result;
+    }
 }
