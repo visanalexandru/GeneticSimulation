@@ -59,5 +59,10 @@ namespace GeneticSimulation {
     Organism Organism::random_organism(unsigned int chromosome_size) {
         return Organism(random_bitvector(chromosome_size), chromosome_size);
     }
+
+    std::ostream &operator<<(std::ostream &os, const Organism &organism) {
+        os << bitvector_to_string(organism.chromosome, organism.chromosome_size);
+        return os;
+    }
 }
 

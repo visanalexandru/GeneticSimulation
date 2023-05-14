@@ -6,6 +6,7 @@
 #define GENETICSIMULATION_ORGANISM_H
 
 #include"defines.h"
+#include<iostream>
 
 
 namespace GeneticSimulation {
@@ -67,7 +68,13 @@ namespace GeneticSimulation {
          * This static function generates a random organism with the given chromosome size.
          */
         static Organism random_organism(unsigned int chromosome_size);
+
+        /*
+         * Logging information to stdout.
+         */
+        friend std::ostream &operator<<(std::ostream &os, const Organism &organism);
     };
+
 
 }
 
