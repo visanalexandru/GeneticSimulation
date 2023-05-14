@@ -100,7 +100,7 @@ namespace GeneticSimulation {
     void Optimiser::show_population(const std::vector<Organism> &population) const {
         size_t index = 1;
         for (const Organism &organism: population) {
-            std::cout << index << ": " << bitvector_to_string(organism.get_chromosome(), bits_per_chromosome) << " ";
+            std::cout << index << ": " << organism << " ";
             std::cout << "x = " << to_domain(organism) << " ";
             std::cout << "f = " << fitness(organism) << std::endl;
             index++;
@@ -119,6 +119,90 @@ namespace GeneticSimulation {
             }
         }
         return to_return;
+    }
+
+    std::vector<Organism> Optimiser::cross_over(const std::vector<Organism> &organisms, bool verbose) const {
+        // Indices of organisms that will be crossed-over.
+        std::vector<size_t> cross;
+
+        // The next population.
+        std::vector<Organism> next = organisms;
+
+        // We need to generate split points.
+        std::uniform_int_distribution<std::mt19937::result_type> distribution(0, bits_per_chromosome - 1);
+
+        if (verbose) {
+            std::cout << "Cross probability: " << cross_probability << std::endl;
+        }
+
+        // Select organisms to be crossed over.
+        for (size_t index = 0; index < organisms.size(); index++) {
+            // Generate a uniform number in [0,1)
+            std::uniform_real_distribution<> dist(0, 1);
+            double uniform = dist(rng);
+
+            if (verbose) {
+                std::cout << index + 1 << ": " << organisms[index] << " u= " << uniform;
+            }
+
+            if (uniform < cross_probability) {
+                if (verbose) {
+                    std::cout << " * selected";
+                }
+                cross.push_back(index);
+            }
+
+            if (verbose) {
+                std::cout << std::endl;
+            }
+        }
+
+        if (verbose) {
+            std::cout << std::endl;
+        }
+
+        // Apply the cross-over operation.
+        size_t index = 0;
+        while (index < cross.size() && index + 1 < cross.size()) {
+            // Generate a random split point between 0 and bits_per_chromosome-1.
+            unsigned int split_point = distribution(rng);
+
+            if (verbose) {
+                std::cout << "Combining chromosome " << cross[index] + 1 << " with chromosome " << cross[index + 1] + 1
+                          << std::endl;
+                std::cout << next[cross[index]] << " " << next[cross[index + 1]] << " ";
+                std::cout << "split point: " << split_point << std::endl;
+            }
+
+            next[cross[index]].cross(next[cross[index + 1]], split_point);
+            if (verbose) {
+                std::cout << "Result: ";
+                std::cout << next[cross[index]] << " " << next[cross[index + 1]] << std::endl;
+            }
+            index += 2;
+        }
+
+        // There might be one more chromosome without a pair.
+        if (index < cross.size()) {
+            // Pair it with the first one.
+            unsigned int split_point = distribution(rng);
+
+            if (verbose) {
+                std::cout << "Combining chromosome " << cross[index] + 1 << " with chromosome " << cross[0] + 1
+                          << std::endl;
+                std::cout << next[cross[index]] << " " << next[cross[0]] << " ";
+                std::cout << "split point: " << split_point << std::endl;
+            }
+
+            next[cross[index]].cross(next[cross[0]], split_point);
+
+            if (verbose) {
+                std::cout << "Result: ";
+                std::cout << next[cross[index]] << " " << next[cross[0]] << std::endl;
+            }
+
+        }
+        return next;
     }
 
 
@@ -141,6 +225,7 @@ namespace GeneticSimulation {
             std::cout << "After selection: " << std::endl;
             show_population(selected);
         }
+        std::vector<Organism> crossed = cross_over(selected, verbose);
 
 
         return selected;
