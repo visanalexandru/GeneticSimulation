@@ -198,11 +198,66 @@ namespace GeneticSimulation {
 
             if (verbose) {
                 std::cout << "Result: ";
-                std::cout << next[cross[index]] << " " << next[cross[0]] << std::endl;
+                std::cout << next[cross[index]] << " " << next[cross[0]] << std::endl << std::endl;
             }
 
         }
         return next;
+    }
+
+    std::vector<Organism> Optimiser::mutation(const std::vector<Organism> &organisms, bool verbose) const {
+        // We need to generate random uniform numbers in [0,1)
+        std::uniform_real_distribution<> real_dist(0, 1);
+
+        // We also need to generate integers between 0 and bits_per_chromosome-1 so that we can
+        // flip random genes.
+        std::uniform_int_distribution<std::mt19937::result_type> int_dist(0, bits_per_chromosome - 1);
+
+        std::vector<Organism> mutated = organisms;
+
+        // Indices of organisms to be mutated.
+        std::vector<size_t> to_mutate;
+
+        if (verbose) {
+            std::cout << "Probability of mutation: " << mutation_probability << std::endl;
+        }
+
+        // Find organisms to be mutated.
+        for (size_t i = 0; i < mutated.size(); i++) {
+            double uniform = real_dist(rng);
+            if (verbose) {
+                std::cout << i + 1 << ": " << organisms[i] << " u = " << uniform << " ";
+            }
+            if (uniform < mutation_probability) {
+                // Select this organism to be mutated.
+                if (verbose) {
+                    std::cout << "* selected";
+                }
+                to_mutate.push_back(i);
+            }
+            if (verbose) {
+                std::cout << std::endl;
+            }
+        }
+        if (verbose) {
+            std::cout << std::endl;
+        }
+
+        for (size_t index: to_mutate) {
+            unsigned gene = int_dist(rng);
+            if (verbose) {
+                std::cout << "Mutating organism " << index + 1 << ", gene " << gene << std::endl;
+                std::cout << "Before: " << organisms[index] << ", ";
+            }
+            mutated[index].mutate(gene);
+            if (verbose) {
+                std::cout << "after: " << mutated[index] << std::endl;
+            }
+        }
+        if (verbose) {
+            std::cout << std::endl;
+        }
+        return mutated;
     }
 
 
@@ -217,9 +272,7 @@ namespace GeneticSimulation {
         Organism best = fittest(organisms);
         std::vector<Organism> selected = selection(organisms, verbose);
 
-        if (verbose) {
-            std::cout << "Fittest: " << fitness(best) << std::endl;
-        }
+        std::cout << "Fittest: " << std::fixed << std::setprecision(10) << fitness(best) << std::endl;
 
         if (verbose) {
             std::cout << "After selection: " << std::endl;
@@ -227,14 +280,67 @@ namespace GeneticSimulation {
         }
         std::vector<Organism> crossed = cross_over(selected, verbose);
 
+        if (verbose) {
+            std::cout << "After crossing over: " << std::endl;
+            show_population(crossed);
+        }
 
-        return selected;
+        std::vector<Organism> mutated = mutation(crossed, verbose);
+
+        if (verbose) {
+            std::cout << "After mutation: " << std::endl;
+            show_population(mutated);
+        }
+
+        // Add the fittest organism to the next generation.
+        mutated.push_back(best);
+
+        if (verbose) {
+            std::cout << "Final population: " << std::endl;
+            show_population(mutated);
+        }
+
+
+        return mutated;
     }
 
     double Optimiser::optimise() {
+
+        // Points used to plot the function.
+        std::vector<double> x = matplot::linspace(domain.left, domain.right, 2000);
+        std::vector<double> y = matplot::transform(x, f);
+
         std::vector<Organism> population = initial_population();
         std::cout << "Initial population: " << std::endl;
-        next_generation(population, true);
+
+        double best = 0;
+
+        for (unsigned int e = 0; e < epochs; e++) {
+            double current_best = fitness(fittest(population));
+            // Check if the best has changed.
+            if (current_best > best) {
+                best = current_best;
+                // Plot the organisms on the graph as a scatter.
+                std::vector<double> points;
+                std::vector<double> fit;
+                for (const Organism &o: population) {
+                    points.push_back(to_domain(o));
+                    fit.push_back(fitness(o));
+                }
+                matplot::plot(x, y);
+                matplot::hold(matplot::on);
+                matplot::scatter(points, fit);
+                matplot::show();
+                matplot::hold(matplot::off);
+            }
+
+            if (e == 0) {
+                population = next_generation(population, true);
+            } else {
+                population = next_generation(population, false);
+            }
+
+        }
         return 0;
     }
 

@@ -9,6 +9,8 @@
 #include<cmath>
 #include<vector>
 #include<iostream>
+#include<iomanip>
+#include<matplot/matplot.h>
 #include "organism.h"
 #include "defines.h"
 
@@ -88,6 +90,20 @@ namespace GeneticSimulation {
          * It applies the three transformations: selection, cross-over and mutation.
          */
         std::vector<Organism> next_generation(const std::vector<Organism> &organisms, bool verbose = false) const;
+
+        /*
+         * This method takes a list of organisms and applies the cross-over operation to some organisms
+         * in the list (selected based on the cross-over probability).
+         */
+        std::vector<Organism> cross_over(const std::vector<Organism> &organisms, bool verbose = false) const;
+
+        /*
+         * This method takes a list of organisms and applies the mutation operation to some organisms in
+         * the list (selected base on the mutation probability).
+         * It works like this: each organism has the probability p of being mutated. If by chance we choose
+         * on organism to be mutated, we will flip a random gene in the chromosome of the organism.
+         */
+        std::vector<Organism> mutation(const std::vector<Organism> &organisms, bool verbose = false) const;
 
 
         /*
