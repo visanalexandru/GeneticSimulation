@@ -112,6 +112,16 @@ namespace GeneticSimulation {
          */
         Organism fittest(const std::vector<Organism> &organisms) const;
 
+        /*
+         * This method returns the maximum fitness in the list of organisms.
+         */
+        double maximum_fitness(const std::vector<Organism> &organisms) const;
+
+        /*
+         * This method returns the average fitness in the list of organisms.
+         */
+        double average_fitness(const std::vector<Organism> &organisms) const;
+
     public:
         Optimiser(std::function<double(double)> _function,
                   unsigned int _population_size,

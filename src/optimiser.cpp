@@ -121,6 +121,22 @@ namespace GeneticSimulation {
         return to_return;
     }
 
+    double Optimiser::maximum_fitness(const std::vector<Organism> &organisms) const {
+        double best = 0;
+        for (const Organism &o: organisms) {
+            best = std::max(best, fitness(o));
+        }
+        return best;
+    }
+
+    double Optimiser::average_fitness(const std::vector<Organism> &organisms) const {
+        double sum = 0;
+        for (const Organism &o: organisms) {
+            sum += fitness(o);
+        }
+        return sum / (double) organisms.size();
+    }
+
     std::vector<Organism> Optimiser::cross_over(const std::vector<Organism> &organisms, bool verbose) const {
         // Indices of organisms that will be crossed-over.
         std::vector<size_t> cross;
@@ -272,7 +288,6 @@ namespace GeneticSimulation {
         Organism best = fittest(organisms);
         std::vector<Organism> selected = selection(organisms, verbose);
 
-        std::cout << "Fittest: " << std::fixed << std::setprecision(10) << fitness(best) << std::endl;
 
         if (verbose) {
             std::cout << "After selection: " << std::endl;
@@ -316,10 +331,14 @@ namespace GeneticSimulation {
         double best = 0;
 
         for (unsigned int e = 0; e < epochs; e++) {
-            double current_best = fitness(fittest(population));
+            double max_fitness = maximum_fitness(population);
+            double avg_fitness = average_fitness(population);
+
             // Check if the best has changed.
-            if (current_best > best) {
-                best = current_best;
+            if (max_fitness > best) {
+                std::cout << "Max fitness: " << std::fixed << std::setprecision(10) << max_fitness << std::endl;
+                std::cout << "Average fitness: " << std::fixed << std::setprecision(10) << avg_fitness << std::endl;
+                best = max_fitness;
                 // Plot the organisms on the graph as a scatter.
                 std::vector<double> points;
                 std::vector<double> fit;
@@ -341,7 +360,7 @@ namespace GeneticSimulation {
             }
 
         }
-        return 0;
+        return to_domain(fittest(population));
     }
 
     unsigned int Optimiser::get_bits_per_chromosome() const {
