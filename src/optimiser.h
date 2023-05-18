@@ -135,7 +135,7 @@ namespace GeneticSimulation {
         /*
          * This method approximates x such that f(x) is maximal.
          */
-        double optimise();
+        double optimise(bool plot = false);
 
         /*
          * Returns the number of bits needed to represent a chromosome.

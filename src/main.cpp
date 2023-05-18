@@ -19,8 +19,8 @@ double g(double x) {
 
 int main() {
     rng.seed(time(NULL));
-    Optimiser opt(g, 40, {-2, 4}, 6, 0.25, 0.3, 100000);
-    double x = opt.optimise();
+    Optimiser opt(g, 10, {-2, 4}, 6, 0.25, 0.01, 100000);
+    double x = opt.optimise(true);
     std::cout << "Maximum found at x = " << x << std::endl;
 
 

@@ -319,11 +319,22 @@ namespace GeneticSimulation {
         return mutated;
     }
 
-    double Optimiser::optimise() {
+    double Optimiser::optimise(bool plot) {
+        if (plot) {
+            // Initialize the window size.
+            auto w = matplot::figure(true);
+            w->size(800, 800);
+        }
+
 
         // Points used to plot the function.
-        std::vector<double> x = matplot::linspace(domain.left, domain.right, 2000);
-        std::vector<double> y = matplot::transform(x, f);
+        std::vector<double> fun_x = matplot::linspace(domain.left, domain.right, 2000);
+        std::vector<double> fun_y = matplot::transform(fun_x, f);
+
+        // These are used to plot the graph of the evolution of the average and the best fitness per iterations.
+        std::vector<double> num_iter;
+        std::vector<double> avg_fit;
+        std::vector<double> max_fit;
 
         std::vector<Organism> population = initial_population();
         std::cout << "Initial population: " << std::endl;
@@ -334,32 +345,78 @@ namespace GeneticSimulation {
             double max_fitness = maximum_fitness(population);
             double avg_fitness = average_fitness(population);
 
+            if (plot) {
+                // Add the current iteration to the points, paired with the best fitness and the
+                // average fitness.
+                num_iter.push_back(e);
+                avg_fit.push_back(avg_fitness);
+                max_fit.push_back(max_fitness);
+            }
+
+
             // Check if the best has changed.
             if (max_fitness > best) {
                 std::cout << "Max fitness: " << std::fixed << std::setprecision(10) << max_fitness << std::endl;
                 std::cout << "Average fitness: " << std::fixed << std::setprecision(10) << avg_fitness << std::endl;
                 best = max_fitness;
+
                 // Plot the organisms on the graph as a scatter.
-                std::vector<double> points;
-                std::vector<double> fit;
-                for (const Organism &o: population) {
-                    points.push_back(to_domain(o));
-                    fit.push_back(fitness(o));
+                if (plot) {
+                    std::vector<double> points;
+                    std::vector<double> fit;
+                    for (const Organism &o: population) {
+                        points.push_back(to_domain(o));
+                        fit.push_back(fitness(o));
+                    }
+                    // Plot the function.
+                    auto function_plot = matplot::plot(fun_x, fun_y);
+                    // Set the line width.
+                    function_plot->line_width(3);
+                    // Keep the function line, add the scatter.
+                    matplot::hold(matplot::on);
+
+                    auto scatter = matplot::scatter(points, fit, 10);
+                    // Fill the dots.
+                    scatter->marker_face(true);
+                    matplot::hold(matplot::off);
+                    // Show the plot.
+                    matplot::show();
                 }
-                matplot::plot(x, y);
-                matplot::hold(matplot::on);
-                matplot::scatter(points, fit);
-                matplot::show();
-                matplot::hold(matplot::off);
+
             }
 
             if (e == 0) {
+                // If the current epoch is the first one, enable verbose output.
                 population = next_generation(population, true);
             } else {
                 population = next_generation(population, false);
             }
-
         }
+
+
+        // Now that the optimisation has ended, plot the average and best fitness plots.
+
+        if (plot) {
+            // Plot the average line.
+            auto avg_plot = matplot::plot(num_iter, avg_fit);
+            avg_plot->display_name("average");
+            avg_plot->line_width(3);
+            matplot::hold(matplot::on);
+
+            // Plot the max line.
+            auto max_plot = matplot::plot(num_iter, max_fit);
+            max_plot->display_name("maximum");
+            max_plot->line_width(3);
+            matplot::hold(matplot::off);
+
+
+            // Enable the legend and set the position of the label.
+            auto legend = matplot::legend();
+            legend->location(matplot::legend::general_alignment::bottomright);
+
+            matplot::show();
+        }
+
         return to_domain(fittest(population));
     }
 
